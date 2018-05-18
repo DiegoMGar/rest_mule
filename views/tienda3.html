@@ -1,0 +1,169 @@
+<html>
+
+<head>
+    <meta charset='utf8'>
+    <title>MTIS Grupal</title>
+    <script src='jquery.js'></script>
+    <link rel='stylesheet' href='bootstrap/css/bootstrap.min.css'>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <style>
+        .tienda_container {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class='navbar navbar-default'>
+        <div class='container-fluid'>
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class='navbar-header'>
+                <button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#bs-example-navbar-collapse-1'
+                    aria-expanded='false'>
+                    <span class='sr-only'>Toggle navigation</span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                </button>
+                <a class='navbar-brand' href='#'>Tienda3</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class='collapse navbar-collapse' id='bs-example-navbar-collapse-1'>
+                <ul class='nav navbar-nav'>
+                    <li class='active'>
+                        <a href='#' id='button_stock'>Stock
+                            <span class='sr-only'>(current)</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href='#' id='button_almacen'>Almacén</a>
+                    </li>
+                    <li class='dropdown'>
+                        <a href='#' class='dropdown-toggle' data-toggle='dropdown' role='button' aria-haspopup='true' aria-expanded='false'>Productos
+                            <span class='caret'></span>
+                        </a>
+                        <ul class='dropdown-menu'>
+                            <li>
+                                <a href='#' id='button_listado'>Listado</a>
+                            </li>
+                            <li>
+                                <a href='#' id='button_editar'>Editar</a>
+                            </li>
+                            <li>
+                                <a href='#' id='button_pedir'>Pedir</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class='nav navbar-nav navbar-right'>
+                    <li>
+                        <a href='#'>LogOut</a>
+                    </li>
+                </ul>
+                <form class='navbar-form navbar-right' id='buscarProducto'>
+                    <div class='form-group'>
+                        <input type='text' class='form-control' placeholder='Búsqueda...'>
+                    </div>
+                    <button type='submit' class='btn btn-default'>Buscar</button>
+                </form>
+
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+    <div class='container'>
+        <div id='stock' class='tienda_container'>Cargando...</div>
+        <div id='almacen' class='tienda_container'></div>
+        <div id='productosLista' class='tienda_container'></div>
+        <div id='productosEditar' class='tienda_container'></div>
+        <div id='productosPedir' class='tienda_container'>
+            <form id="formProductosPedir">
+                <div class="form-group">
+                    <label for="exampleInput1">Referencia producto</label>
+                    <input type="text" class="form-control" id="exampleInput1" placeholder="Referencia">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInput2">Unidades</label>
+                    <input type="number" class="form-control" id="exampleInput2" placeholder="Unidades">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function fetchSomething(url, contenedor, mensaje) {
+            fetch(url)
+                .then(function (resp) {
+                    if(resp.status != 200)
+                        throw "Error status: "+resp.status
+                    return resp.json()
+                })
+                .then(function (resp) {
+                    var listado = document.getElementById(contenedor)
+                    listado.innerHTML = ''
+                    var node = document.createElement('h2')
+                    var t = document.createTextNode(mensaje)
+                    node.appendChild(t)
+                    listado.appendChild(node)
+                    node = document.createElement('ul')
+                    listado.appendChild(node)
+                    for (item of resp) {
+                        var li = document.createElement('li')
+                        var t = document.createTextNode(item.name)
+                        li.appendChild(t)
+                        node.appendChild(li)
+                    }
+                })
+                .catch(function (error) {
+                    alert('error: ' + error)
+                })
+        }
+        $(document).ready(function () {
+            $('#stock').show()
+            fetchSomething('http://localhost:3000/productos/stock', 'stock', 'Listando con stock')
+        });
+        $('#button_stock').click(function () {
+            location.reload()
+        })
+        $('#button_almacen').click(function () {
+            $('.tienda_container').hide()
+            fetchSomething('http://localhost:3000/productos/almacen', 'almacen', 'Listando almacen remoto')
+            $('#almacen').slideDown()
+        })
+        $('#button_pedir').click(function () {
+            $('.tienda_container').hide()
+            $('#productosPedir').slideDown()
+        })
+        $('#formProductosPedir').submit(function (event) {
+            var endpoint = 'http://localhost:3000/productos/pedir'
+            fetch(endpoint, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: "POST",
+                    body: JSON.stringify({
+                        tiendaId: '3',
+                        referenciaProducto: $('#exampleInput1').val(),
+                        unidades: $('#exampleInput2').val()
+                    })
+                })
+                .then(function (reps) {
+                    if(resp.status != 200)
+                        throw "Error status: "+resp.status
+                    console.log(res.status)
+                })
+                .catch(function (err) {
+                    alert('error: ' + err)
+                })
+            return false;
+        })
+        $('#buscarProducto').submit(function (event) {
+            return false;
+        })
+    </script>
+</body>
+
+</html>

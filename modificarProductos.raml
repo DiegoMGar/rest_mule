@@ -1,0 +1,27 @@
+#%RAML 1.0
+---
+title: Tienda - MTIS
+baseUri: http://localhost:3000
+version: v1
+/productos:
+  /precio:
+    put:
+      description: Edita productos
+      body:
+        application/json:
+          example: |
+            {
+              "tienda": "abc",
+              "referenciaProducto": "abcde",
+              "unidades": 20
+            }
+      responses:
+        200:
+          body:
+            application/json:
+        404:
+          body:
+            application/json:
+        500:
+          body:
+            application/json:
