@@ -48,9 +48,6 @@
                                 <a href='#' id='button_listado'>Listado</a>
                             </li>
                             <li>
-                                <a href='#' id='button_editar'>Editar</a>
-                            </li>
-                            <li>
                                 <a href='#' id='button_pedir'>Pedir</a>
                             </li>
                         </ul>
@@ -77,7 +74,6 @@
         <div id='stock' class='tienda_container'>Cargando...</div>
         <div id='almacen' class='tienda_container'></div>
         <div id='productosLista' class='tienda_container'></div>
-        <div id='productosEditar' class='tienda_container'></div>
         <div id='productosPedir' class='tienda_container'>
             <form id="formProductosPedir">
                 <div class="form-group">
@@ -101,6 +97,7 @@
                     return resp.json()
                 })
                 .then(function (resp) {
+                    console.log(JSON.stringify(resp))
                     var listado = document.getElementById(contenedor)
                     listado.innerHTML = ''
                     var node = document.createElement('h2')
@@ -122,19 +119,24 @@
         }
         $(document).ready(function () {
             $('#stock').show()
-            fetchSomething('http://localhost:3000/productos/stock', 'stock', 'Listando con stock')
+            fetchSomething('http://localhost:3000/productos/stock', 'stock', 'Listado local con stock')
         });
         $('#button_stock').click(function () {
             location.reload()
         })
         $('#button_almacen').click(function () {
             $('.tienda_container').hide()
-            fetchSomething('http://localhost:3000/productos/almacen', 'almacen', 'Listando almacen remoto')
+            fetchSomething('http://localhost:3000/productos/almacen', 'almacen', 'Listado remoto con stock')
             $('#almacen').slideDown()
         })
         $('#button_pedir').click(function () {
             $('.tienda_container').hide()
             $('#productosPedir').slideDown()
+        })
+        $('#button_listado').click(function () {
+            $('.tienda_container').hide()
+            fetchSomething('http://localhost:3000/productos', 'productosLista', 'Listado de todos los productos remotos')
+            $('#productosLista').slideDown()
         })
         $('#formProductosPedir').submit(function (event) {
             var endpoint = 'http://localhost:3000/productos/pedir'
