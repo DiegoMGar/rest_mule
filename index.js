@@ -7,7 +7,7 @@ app.use(bp.json())
 app.use(cors())
 var basededatos = {
     productos: [{
-        name: '',
+        nombre: '',
         unidades: '',
         referencia: ''
     }]

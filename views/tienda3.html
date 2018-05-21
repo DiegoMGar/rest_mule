@@ -106,9 +106,9 @@
                     listado.appendChild(node)
                     node = document.createElement('ul')
                     listado.appendChild(node)
-                    for (item of resp) {
+                    for (var item of resp) {
                         var li = document.createElement('li')
-                        var t = document.createTextNode(item.name)
+                        var t = document.createTextNode(item.nombre)
                         li.appendChild(t)
                         node.appendChild(li)
                     }
