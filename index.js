@@ -33,7 +33,7 @@ app.get('/productos/stock', function (req, resp) {
     resp.send(constock)
 })
 app.get('/productos/almacen', function (req, resp) {
-    var endpoint = 'http://localhost:30000/productos'
+    var endpoint = 'http://localhost:9090/productos'
     request.get(endpoint, function (err, httpResponse, body) {
         if (err) {
             resp.status(500)
@@ -62,7 +62,7 @@ app.get('/productos/:ref',function(req,resp){
     }
 })
 app.post('/productos/pedir', function (req, resp) {
-    var endpoint = 'http://localhost:30000/pedido'
+    var endpoint = 'http://localhost:9090/pedido'
     var referenciaProducto = req.body.referenciaProducto
     var unidades = req.body.unidades
     request.post(endpoint, {
