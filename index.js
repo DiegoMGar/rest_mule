@@ -7,12 +7,22 @@ app.use(bp.json())
 app.use(cors())
 var basededatos = {
     productos: [{
-        nombre: '',
-        unidades: '',
-        referencia: ''
+        nombre: 'Sony Xperia Z1',
+        unidades: 5,
+        referencia: 'sxz1',
+        imgUrl: 'img/xperiaz1.jpg'
+    }, {
+        nombre: 'Samsung S3',
+        unidades: 3,
+        referencia: 'sgs3',
+        imgUrl: 'img/samsungs3.jpg'
+    }, {
+        nombre: 'Samsung S2',
+        unidades: 0,
+        referencia: 'sgs2',
+        imgUrl: 'img/samsungs2.jpg'
     }]
 }
-
 app.get('/', function (req, resp) {
     resp.sendFile('views/index.html', {
         root: __dirname
@@ -23,15 +33,8 @@ app.get('/productos/stock', function (req, resp) {
     resp.send(constock)
 })
 app.get('/productos/almacen', function (req, resp) {
-    var endpoint = 'http://localhost:9090/productos'
-    var tienda = req.body.tiendaId
-    var referenciaProducto = req.body.referenciaProducto
-    var unidades = req.body.unidades
-    request.get(endpoint, {
-        tienda,
-        referenciaProducto,
-        unidades
-    }, function (err, httpResponse, body) {
+    var endpoint = 'http://localhost:30000/productos'
+    request.get(endpoint, function (err, httpResponse, body) {
         if (err) {
             resp.status(500)
             resp.send(err)
@@ -43,13 +46,26 @@ app.get('/productos/almacen', function (req, resp) {
 app.get('/productos/', function (req, resp) {
     resp.send(basededatos.productos)
 })
+app.get('/productos/:ref',function(req,resp){
+    var result = []
+    for(var producto of basededatos.productos){
+        if(producto.referencia == req.params.ref){
+            result.push(producto)
+            break
+        }
+    }
+    if(result.length<1){
+        resp.status(404)
+        resp.end()
+    }else{
+        resp.send(result)
+    }
+})
 app.post('/productos/pedir', function (req, resp) {
-    var endpoint = 'http://localhost:9090/pedido'
-    var tienda = req.body.tiendaId
+    var endpoint = 'http://localhost:30000/pedido'
     var referenciaProducto = req.body.referenciaProducto
     var unidades = req.body.unidades
     request.post(endpoint, {
-        tienda,
         referenciaProducto,
         unidades
     }, function (err, httpResponse, body) {

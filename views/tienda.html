@@ -1,0 +1,204 @@
+<html>
+
+<head>
+    <meta charset='utf8'>
+    <title>MTIS Grupal</title>
+    <script src='jquery.js'></script>
+    <link rel='stylesheet' href='bootstrap/css/bootstrap.min.css'>
+    <script src='bootstrap/js/bootstrap.js'></script>
+    <script src='sweetalert.js'></script>
+    <style>
+        .tienda_container {
+            display: none;
+        }
+
+        .container-img>img {
+            width: 100%;
+            height: 350px;
+        }
+
+        .producto {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class='navbar navbar-default'>
+        <div class='container-fluid'>
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class='navbar-header'>
+                <button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#bs-example-navbar-collapse-1'
+                    aria-expanded='false'>
+                    <span class='sr-only'>Toggle navigation</span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                </button>
+                <a class='navbar-brand' href='tienda.html'>Tienda</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class='collapse navbar-collapse' id='bs-example-navbar-collapse-1'>
+                <ul class='nav navbar-nav'>
+                    <li class='active'>
+                        <a href='#' id='button_stock'>Con stock</a>
+                    </li>
+                    <li>
+                        <a href='#' id='button_listado'>Listado completo</a>
+                    </li>
+                    <li>
+                        <a href='#' id='button_almacen'>Almacén remoto</a>
+                    </li>
+                    <li>
+                        <a href='#' id='button_pedir'>Pedir producto</a>
+                    </li>
+                </ul>
+                <ul class='nav navbar-nav navbar-right'>
+                    <li>
+                        <a href='#'>LogOut</a>
+                    </li>
+                </ul>
+                <form class='navbar-form navbar-right' id='buscarProducto'>
+                    <div class='form-group'>
+                        <input type='text' id='search_producto' class='form-control' placeholder='Búsqueda...'>
+                    </div>
+                    <button type='submit' class='btn btn-default'>Buscar</button>
+                </form>
+
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+    <div class='container'>
+        <div id='stock' class='tienda_container'>Cargando...</div>
+        <div id='almacen' class='tienda_container'></div>
+        <div id='productosLista' class='tienda_container'></div>
+        <div id='productosPedir' class='tienda_container'>
+            <form id='formProductosPedir'>
+                <div class='form-group'>
+                    <label for='exampleInput1'>Referencia producto</label>
+                    <input type='text' class='form-control' id='exampleInput1' placeholder='Referencia'>
+                </div>
+                <div class='form-group'>
+                    <label for='exampleInput2'>Unidades</label>
+                    <input type='number' class='form-control' id='exampleInput2' placeholder='Unidades'>
+                </div>
+                <button type='submit' class='btn btn-default'>Submit</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        function fetchSomething(url, contenedor, mensaje) {
+            fetch(url)
+                .then(function (resp) {
+                    var listado = document.getElementById(contenedor)
+                    listado.innerHTML = ''
+                    var node = document.createElement('h2')
+                    var t = document.createTextNode(mensaje)
+                    node.appendChild(t)
+                    listado.appendChild(node)
+                    if (resp.status != 200)
+                        throw 'Error status: ' + resp.status
+                    return resp.json()
+                })
+                .then(function (resp) {
+                    console.log(JSON.stringify(resp))
+                    var listado = document.getElementById(contenedor)
+                    for (var item of resp) {
+                        var col = document.createElement('div')
+                        col.className = 'col-md-4 col-sm-6 col-xs-12 producto'
+                        var img_div = document.createElement('div')
+                        img_div.className = 'container-img'
+                        var img = document.createElement('img')
+                        img.src = item.imgUrl
+                        img_div.appendChild(img)
+                        col.appendChild(img_div)
+                        var p = document.createElement('p')
+                        var t = document.createTextNode(item.nombre + ' (' + item.referencia + ')')
+                        p.appendChild(t)
+                        col.appendChild(p)
+                        p = document.createElement('p')
+                        t = document.createTextNode('Stock: ' + item.unidades.toString())
+                        p.appendChild(t)
+                        col.appendChild(p)
+                        var button = document.createElement('button')
+                        button.className = 'btn btn-default button_pedir_listado'    
+                        var t_button = document.createTextNode('Pedir')
+                        button.appendChild(t_button)
+                        button.setAttribute('ref',item.referencia)
+                        col.appendChild(button)
+                        listado.appendChild(col)
+                    }
+                    $('#' + contenedor).slideDown()
+                })
+                .catch(function (error) {
+                    swal('ERROR!', 'Error en la solicitud: ' + error, 'error')
+                    $('#' + contenedor).slideDown()
+                })
+        }
+        $(document).ready(function () {
+            fetchSomething('http://localhost:3000/productos/stock', 'stock',
+                'Listado productos con stock local')
+        })
+        $('#button_stock').click(function () {
+            location.reload()
+        })
+        $('#button_almacen').click(function () {
+            $('.navbar-nav').find('li').removeClass('active')
+            $(this).parent().addClass('active')
+            $('.tienda_container').hide()
+            fetchSomething('http://localhost:3000/productos/almacen', 'almacen',
+                'Listado productos con stock REMOTO')
+        })
+        $('#button_pedir').click(function () {
+            $('.navbar-nav').find('li').removeClass('active')
+            $(this).parent().addClass('active')
+            $('.tienda_container').hide()
+            $('#productosPedir').slideDown()
+        })
+        $('.container').on('click','.button_pedir_listado',function () {
+            $('#exampleInput1').val($(this).attr('ref'))
+            $('#button_pedir').click()
+        })
+        $('#button_listado').click(function () {
+            $('.navbar-nav').find('li').removeClass('active')
+            $(this).parent().addClass('active')
+            $('.tienda_container').hide()
+            fetchSomething('http://localhost:3000/productos', 'productosLista',
+                'Listado todos los productos local')
+        })
+        $('#formProductosPedir').submit(function (event) {
+            var endpoint = 'http://localhost:3000/productos/pedir'
+            fetch(endpoint, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        referenciaProducto: $('#exampleInput1').val(),
+                        unidades: $('#exampleInput2').val()
+                    })
+                })
+                .then(function (reps) {
+                    if (resp.status != 200)
+                        throw 'Error status: ' + resp.status
+                    console.log(res.status)
+                })
+                .catch(function (err) {
+                    alert('error: ' + err)
+                })
+            return false
+        })
+        $('#buscarProducto').submit(function (event) {
+            event.preventDefault()
+            $('.tienda_container').hide()
+            fetchSomething('http://localhost:3000/productos/' + $('#search_producto').val(), 'productosLista',
+                'Búsqueda del producto: ' + $('#search_producto').val())
+        })
+    </script>
+</body>
+
+</html>
