@@ -124,10 +124,10 @@
                         p.appendChild(t)
                         col.appendChild(p)
                         var button = document.createElement('button')
-                        button.className = 'btn btn-default button_pedir_listado'    
+                        button.className = 'btn btn-default button_pedir_listado'
                         var t_button = document.createTextNode('Pedir')
                         button.appendChild(t_button)
-                        button.setAttribute('ref',item.referencia)
+                        button.setAttribute('ref', item.referencia)
                         col.appendChild(button)
                         listado.appendChild(col)
                     }
@@ -158,7 +158,7 @@
             $('.tienda_container').hide()
             $('#productosPedir').slideDown()
         })
-        $('.container').on('click','.button_pedir_listado',function () {
+        $('.container').on('click', '.button_pedir_listado', function () {
             $('#exampleInput1').val($(this).attr('ref'))
             $('#button_pedir').click()
         })
