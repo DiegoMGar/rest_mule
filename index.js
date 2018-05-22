@@ -30,6 +30,9 @@ app.get('/', function (req, resp) {
         root: __dirname
     })
 })
+app.get('/productos', function (req, resp) {
+    resp.send(basededatos.productos)
+})
 app.get('/productos/stock', function (req, resp) {
     var constock = basededatos.productos.filter(p => p.unidades > 0)
     resp.send(constock)
@@ -41,12 +44,15 @@ app.get('/productos/almacen', function (req, resp) {
             resp.status(500)
             resp.send(err)
         } else {
-            resp.send(body)
+            var productos = []
+            for(var prod of body){
+                var arrayProducto = basededatos.productos.filter(p => p.referencia == prod.cod_producto)
+                Object.assign(prod,arrayProducto[0])
+                productos.push(prod)
+            }
+            resp.send(productos)
         }
     })
-})
-app.get('/productos', function (req, resp) {
-    resp.send(basededatos.productos)
 })
 app.get('/pedidos', function (req, resp) {
     var pedidos = []
@@ -96,10 +102,6 @@ app.post('/productos/pedir', function (req, resp) {
             resp.send(body)
         }
     })
-})
-app.put('/productos', function (req, resp) {
-    resp.status(501)
-    resp.end()
 })
 
 // RUNING SERVER
