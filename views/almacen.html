@@ -53,6 +53,9 @@
                     <li>
                         <a href='#' id='button_pedir'>Pedir producto</a>
                     </li>
+                    <li>
+                        <a href='#' id='button_pedidos'>Pedidos</a>
+                    </li>
                 </ul>
                 <ul class='nav navbar-nav navbar-right'>
                     <li>
@@ -75,6 +78,7 @@
         <div id='stock' class='tienda_container'>Cargando...</div>
         <div id='almacen' class='tienda_container'></div>
         <div id='productosLista' class='tienda_container'></div>
+        <div id='productosPedidos' class='tienda_container'></div>
         <div id='productosPedir' class='tienda_container'>
             <form id='formProductosPedir'>
                 <div class='form-group'>
@@ -123,12 +127,23 @@
                         t = document.createTextNode('Stock: ' + item.unidades.toString())
                         p.appendChild(t)
                         col.appendChild(p)
-                        var button = document.createElement('button')
-                        button.className = 'btn btn-default button_pedir_listado'
-                        var t_button = document.createTextNode('Pedir')
-                        button.appendChild(t_button)
-                        button.setAttribute('ref', item.referencia)
-                        col.appendChild(button)
+                        if (contenedor == 'productosPedidos') {
+                            p = document.createElement('p')
+                            t = document.createTextNode('Msg: ' + item.mensaje)
+                            p.appendChild(t)
+                            col.appendChild(p)
+                            p = document.createElement('p')
+                            t = document.createTextNode('Llegada: ' + item.fecha)
+                            p.appendChild(t)
+                            col.appendChild(p)
+                        } else {
+                            var button = document.createElement('button')
+                            button.className = 'btn btn-default button_pedir_listado'
+                            var t_button = document.createTextNode('Pedir')
+                            button.appendChild(t_button)
+                            button.setAttribute('ref', item.referencia)
+                            col.appendChild(button)
+                        }
                         listado.appendChild(col)
                     }
                     $('#' + contenedor).slideDown()
@@ -152,6 +167,13 @@
             fetchSomething('http://localhost:3000/productos/almacen', 'almacen',
                 'Listado productos con stock REMOTO')
         })
+        $('#button_pedidos').click(function () {
+            $('.navbar-nav').find('li').removeClass('active')
+            $(this).parent().addClass('active')
+            $('.tienda_container').hide()
+            fetchSomething('http://localhost:3000/pedidos', 'productosPedidos',
+                'Listado de pedidos pendientes')
+        })
         $('#button_pedir').click(function () {
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
@@ -172,16 +194,16 @@
         $('#formProductosPedir').submit(function (event) {
             var endpoint = 'http://localhost:3000/productos/pedir'
             fetch(endpoint, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'POST',
-                    body: JSON.stringify({
-                        referenciaProducto: $('#exampleInput1').val(),
-                        unidades: $('#exampleInput2').val()
-                    })
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                method: 'POST',
+                body: JSON.stringify({
+                    referenciaProducto: $('#exampleInput1').val(),
+                    unidades: $('#exampleInput2').val()
                 })
+            })
                 .then(function (reps) {
                     if (resp.status != 200)
                         throw 'Error status: ' + resp.status
