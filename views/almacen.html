@@ -154,7 +154,7 @@
                 })
         }
         $(document).ready(function () {
-            fetchSomething('http://localhost:3000/productos/stock', 'stock',
+            fetchSomething('http://localhost:30003/productos/stock', 'stock',
                 'Listado productos con stock local')
         })
         $('#button_stock').click(function () {
@@ -164,14 +164,14 @@
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
             $('.tienda_container').hide()
-            fetchSomething('http://localhost:3000/productos/almacen', 'almacen',
+            fetchSomething('http://localhost:30003/productos/almacen', 'almacen',
                 'Listado productos con stock REMOTO')
         })
         $('#button_pedidos').click(function () {
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
             $('.tienda_container').hide()
-            fetchSomething('http://localhost:3000/pedidos', 'productosPedidos',
+            fetchSomething('http://localhost:30003/pedidos', 'productosPedidos',
                 'Listado de pedidos pendientes')
         })
         $('#button_pedir').click(function () {
@@ -188,36 +188,36 @@
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
             $('.tienda_container').hide()
-            fetchSomething('http://localhost:3000/productos', 'productosLista',
+            fetchSomething('http://localhost:30003/productos', 'productosLista',
                 'Listado todos los productos local')
         })
         $('#formProductosPedir').submit(function (event) {
-            var endpoint = 'http://localhost:3000/productos/pedir'
+            var endpoint = 'http://localhost:30003/productos/pedir'
             fetch(endpoint, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                method: 'POST',
-                body: JSON.stringify({
-                    referenciaProducto: $('#exampleInput1').val(),
-                    unidades: $('#exampleInput2').val()
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        referenciaProducto: $('#exampleInput1').val(),
+                        unidades: $('#exampleInput2').val()
+                    })
                 })
-            })
-                .then(function (reps) {
+                .then(function (resp) {
                     if (resp.status != 200)
                         throw 'Error status: ' + resp.status
-                    console.log(res.status)
+                    console.log(resp.status)
                 })
                 .catch(function (err) {
-                    alert('error: ' + err)
+                    swal('ERROR!', 'Error en la solicitud: ' + err, 'error')
                 })
             return false
         })
         $('#buscarProducto').submit(function (event) {
             event.preventDefault()
             $('.tienda_container').hide()
-            fetchSomething('http://localhost:3000/productos/' + $('#search_producto').val(), 'productosLista',
+            fetchSomething('http://localhost:30003/productos/' + $('#search_producto').val(), 'productosLista',
                 'Búsqueda del producto: ' + $('#search_producto').val())
         })
     </script>

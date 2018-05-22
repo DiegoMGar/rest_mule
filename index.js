@@ -22,8 +22,17 @@ var basededatos = {
         referencia: 'sgs2',
         imgUrl: 'img/samsungs2.jpg'
     }],
-    pedidos: [{ mensaje: 'Texto de prueba', fecha: '2018-12-01', referencia: 'sgs3' },
-    { mensaje: 'Segundo mensaje', fecha: '2018-01-25', referencia:'sxz1' }]
+    pedidos: [{
+            mensaje: 'Texto de prueba',
+            fecha: '2018-12-01',
+            referencia: 'sgs3'
+        },
+        {
+            mensaje: 'Segundo mensaje',
+            fecha: '2018-01-25',
+            referencia: 'sxz1'
+        }
+    ]
 }
 app.get('/', function (req, resp) {
     resp.sendFile('views/index.html', {
@@ -44,11 +53,16 @@ app.get('/productos/almacen', function (req, resp) {
             resp.status(500)
             resp.send(err)
         } else {
+            body = JSON.parse(body)
             var productos = []
-            for(var prod of body){
-                var arrayProducto = basededatos.productos.filter(p => p.referencia == prod.cod_producto)
-                Object.assign(prod,arrayProducto[0])
+            for (var prod of body) {
+                var arrayProducto = basededatos.productos.filter(p => p.referencia == prod.referencia)
+                var tmpUnidades = prod.unidades
+                Object.assign(prod, arrayProducto[0])
+                prod.unidades = tmpUnidades
                 productos.push(prod)
+                console.log(JSON.stringify(arrayProducto))
+                console.log(JSON.stringify(prod))
             }
             resp.send(productos)
         }
@@ -82,29 +96,43 @@ app.post('/productos/pedir', function (req, resp) {
     var endpoint = 'http://localhost:9090/pedido'
     var referenciaProducto = req.body.referenciaProducto
     var unidades = req.body.unidades
-    request.post(endpoint, {
+    var formdata = {
         tienda: '1',
-        referenciaProducto,
-        unidades
+        referenciaProducto: referenciaProducto,
+        unidades: unidades
+    }
+    request.post({
+        url: endpoint,
+        form: formdata
     }, function (err, httpResponse, body) {
         if (err) {
             resp.status(500)
             resp.send(err)
         } else {
-            console.log(JSON.stringify(body))
-            var fecha = ''
-            if (body.respuesta.fecha)
-                fecha = body.respuesta.fecha
-            var mensaje = body.respuesta.mensaje
-            var salida = body.respuesta.salida
-            var obj = { mensaje: mensaje, fecha: fecha, referencia: referenciaProducto }
-            basededatos.pedidos.push(obj)
-            resp.send(body)
+            try {
+                body = JSON.parse(body)
+                console.log(JSON.stringify(body))
+                var fecha = ''
+                if (body.respuesta.fecha)
+                    fecha = body.respuesta.fecha
+                var mensaje = body.respuesta.mensaje
+                var salida = body.respuesta.salida
+                var obj = {
+                    mensaje: mensaje,
+                    fecha: fecha,
+                    referencia: referenciaProducto
+                }
+                basededatos.pedidos.push(obj)
+                resp.send(body)
+            } catch (error) {
+                resp.status(500)
+                resp.send(error)
+            }
         }
     })
 })
 
 // RUNING SERVER
-app.listen(3000, function () {
+app.listen(30003, function () {
     console.log('MTIS GRUPAL almacén rest, por Diego Maroto, sirviendo por el puerto 3000')
 })
