@@ -20,6 +20,27 @@
         .producto {
             padding: 10px;
         }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            /* Light grey */
+            border-top: 16px solid #3498db;
+            /* Blue */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin:200px auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -59,7 +80,7 @@
                 </ul>
                 <ul class='nav navbar-nav navbar-right'>
                     <li>
-                        <a href='#'>LogOut</a>
+                        <a href='#'>Logout</a>
                     </li>
                 </ul>
                 <form class='navbar-form navbar-right' id='buscarProducto'>
@@ -75,6 +96,7 @@
         <!-- /.container-fluid -->
     </nav>
     <div class='container'>
+        <div class="loader"></div>
         <div id='stock' class='tienda_container'>Cargando...</div>
         <div id='almacen' class='tienda_container'></div>
         <div id='productosLista' class='tienda_container'></div>
@@ -95,63 +117,73 @@
     </div>
     <script>
         function fetchSomething(url, contenedor, mensaje) {
-            fetch(url)
-                .then(function (resp) {
-                    var listado = document.getElementById(contenedor)
-                    listado.innerHTML = ''
-                    var node = document.createElement('h2')
-                    var t = document.createTextNode(mensaje)
-                    node.appendChild(t)
-                    listado.appendChild(node)
-                    if (resp.status != 200)
-                        throw 'Error status: ' + resp.status
-                    return resp.json()
-                })
-                .then(function (resp) {
-                    console.log(JSON.stringify(resp))
-                    var listado = document.getElementById(contenedor)
-                    for (var item of resp) {
-                        var col = document.createElement('div')
-                        col.className = 'col-md-4 col-sm-6 col-xs-12 producto'
-                        var img_div = document.createElement('div')
-                        img_div.className = 'container-img'
-                        var img = document.createElement('img')
-                        img.src = item.imgUrl
-                        img_div.appendChild(img)
-                        col.appendChild(img_div)
-                        var p = document.createElement('p')
-                        var t = document.createTextNode(item.nombre + ' (' + item.referencia + ')')
-                        p.appendChild(t)
-                        col.appendChild(p)
-                        p = document.createElement('p')
-                        t = document.createTextNode('Stock: ' + item.unidades.toString())
-                        p.appendChild(t)
-                        col.appendChild(p)
-                        if (contenedor == 'productosPedidos') {
-                            p = document.createElement('p')
-                            t = document.createTextNode('Msg: ' + item.mensaje)
+            setTimeout(function () {
+                fetch(url)
+                    .then(function (resp) {
+                        var listado = document.getElementById(contenedor)
+                        listado.innerHTML = ''
+                        var node = document.createElement('h2')
+                        var t = document.createTextNode(mensaje)
+                        node.appendChild(t)
+                        listado.appendChild(node)
+                        if (resp.status != 200)
+                            throw 'Error status: ' + resp.status
+                        return resp.json()
+                    })
+                    .then(function (resp) {
+                        console.log(JSON.stringify(resp))
+                        var listado = document.getElementById(contenedor)
+                        for (var item of resp) {
+                            var col = document.createElement('div')
+                            col.className = 'col-md-4 col-sm-6 col-xs-12 producto'
+                            var img_div = document.createElement('div')
+                            img_div.className = 'container-img'
+                            var img = document.createElement('img')
+                            img.src = item.imgUrl
+                            img_div.appendChild(img)
+                            col.appendChild(img_div)
+                            var p = document.createElement('p')
+                            var t = document.createTextNode(item.nombre + ' (' + item.referencia + ')')
                             p.appendChild(t)
                             col.appendChild(p)
-                            p = document.createElement('p')
-                            t = document.createTextNode('Llegada: ' + item.fecha)
-                            p.appendChild(t)
-                            col.appendChild(p)
-                        } else {
-                            var button = document.createElement('button')
-                            button.className = 'btn btn-default button_pedir_listado'
-                            var t_button = document.createTextNode('Pedir')
-                            button.appendChild(t_button)
-                            button.setAttribute('ref', item.referencia)
-                            col.appendChild(button)
+                            if (contenedor == 'productosPedidos') {
+                                p = document.createElement('p')
+                                t = document.createTextNode('Unidades pedidas: ' + item.unidades.toString())
+                                p.appendChild(t)
+                                col.appendChild(p)
+                                p = document.createElement('p')
+                                t = document.createTextNode('Msg: ' + item.mensaje)
+                                p.appendChild(t)
+                                col.appendChild(p)
+                                if (item.fecha) {
+                                    p = document.createElement('p')
+                                    t = document.createTextNode('Llegada: ' + item.fecha)
+                                    p.appendChild(t)
+                                    col.appendChild(p)
+                                }
+                            } else {
+                                p = document.createElement('p')
+                                t = document.createTextNode('Stock: ' + item.unidades.toString())
+                                p.appendChild(t)
+                                col.appendChild(p)
+                                var button = document.createElement('button')
+                                button.className = 'btn btn-default button_pedir_listado'
+                                var t_button = document.createTextNode('Pedir')
+                                button.appendChild(t_button)
+                                button.setAttribute('ref', item.referencia)
+                                col.appendChild(button)
+                            }
+                            listado.appendChild(col)
                         }
-                        listado.appendChild(col)
-                    }
-                    $('#' + contenedor).slideDown()
-                })
-                .catch(function (error) {
-                    swal('ERROR!', 'Error en la solicitud: ' + error, 'error')
-                    $('#' + contenedor).slideDown()
-                })
+                        $('.loader').hide()
+                        $('#' + contenedor).slideDown()
+                    })
+                    .catch(function (error) {
+                        swal('ERROR!', 'Error en la solicitud: ' + error, 'error')
+                        $('.loader').hide()
+                        $('#' + contenedor).slideDown()
+                    })
+            }, 750)
         }
         $(document).ready(function () {
             fetchSomething('http://localhost:30003/productos/stock', 'stock',
@@ -164,6 +196,7 @@
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
             $('.tienda_container').hide()
+            $('.loader').show()
             fetchSomething('http://localhost:30003/productos/almacen', 'almacen',
                 'Listado productos con stock REMOTO')
         })
@@ -171,6 +204,7 @@
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
             $('.tienda_container').hide()
+            $('.loader').show()
             fetchSomething('http://localhost:30003/pedidos', 'productosPedidos',
                 'Listado de pedidos pendientes')
         })
@@ -188,6 +222,7 @@
             $('.navbar-nav').find('li').removeClass('active')
             $(this).parent().addClass('active')
             $('.tienda_container').hide()
+            $('.loader').show()
             fetchSomething('http://localhost:30003/productos', 'productosLista',
                 'Listado todos los productos local')
         })
@@ -208,6 +243,7 @@
                     if (resp.status != 200)
                         throw 'Error status: ' + resp.status
                     console.log(resp.status)
+                    $('#button_listado').click()
                 })
                 .catch(function (err) {
                     swal('ERROR!', 'Error en la solicitud: ' + err, 'error')
@@ -216,7 +252,9 @@
         })
         $('#buscarProducto').submit(function (event) {
             event.preventDefault()
+            $('.navbar-nav').find('li').removeClass('active')
             $('.tienda_container').hide()
+            $('.loader').show()
             fetchSomething('http://localhost:30003/productos/' + $('#search_producto').val(), 'productosLista',
                 'Búsqueda del producto: ' + $('#search_producto').val())
         })

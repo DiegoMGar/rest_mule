@@ -22,17 +22,7 @@ var basededatos = {
         referencia: 'sgs2',
         imgUrl: 'img/samsungs2.jpg'
     }],
-    pedidos: [{
-            mensaje: 'Texto de prueba',
-            fecha: '2018-12-01',
-            referencia: 'sgs3'
-        },
-        {
-            mensaje: 'Segundo mensaje',
-            fecha: '2018-01-25',
-            referencia: 'sxz1'
-        }
-    ]
+    pedidos: []
 }
 app.get('/', function (req, resp) {
     resp.sendFile('views/index.html', {
@@ -72,7 +62,9 @@ app.get('/pedidos', function (req, resp) {
     var pedidos = []
     for (var pedido of basededatos.pedidos) {
         var arrayProducto = basededatos.productos.filter(p => p.referencia == pedido.referencia)
+        var tmpUnidades = pedido.unidades
         Object.assign(pedido, arrayProducto[0])
+        pedido.unidades = tmpUnidades
         pedidos.push(pedido)
     }
     resp.send(pedidos)
@@ -95,44 +87,72 @@ app.get('/productos/:ref', function (req, resp) {
 app.post('/productos/pedir', function (req, resp) {
     var endpoint = 'http://localhost:9090/pedido'
     var referenciaProducto = req.body.referenciaProducto
-    var unidades = req.body.unidades
-    var formdata = {
-        tienda: '1',
-        referenciaProducto: referenciaProducto,
-        unidades: unidades
-    }
-    request.post({
-        url: endpoint,
-        form: formdata
-    }, function (err, httpResponse, body) {
-        if (err) {
-            resp.status(500)
-            resp.send(err)
-        } else {
-            try {
-                body = JSON.parse(body)
-                console.log(JSON.stringify(body))
-                var fecha = ''
-                if (body.respuesta.fecha)
-                    fecha = body.respuesta.fecha
-                var mensaje = body.respuesta.mensaje
-                var salida = body.respuesta.salida
-                var obj = {
-                    mensaje: mensaje,
-                    fecha: fecha,
-                    referencia: referenciaProducto
-                }
-                basededatos.pedidos.push(obj)
-                resp.send(body)
-            } catch (error) {
-                resp.status(500)
-                resp.send(error)
-            }
+    if (existsReference(referenciaProducto)) {
+        var unidades = req.body.unidades
+        var formdata = {
+            tienda: '1',
+            referenciaProducto: referenciaProducto,
+            unidades: unidades
         }
-    })
+        request.post({
+            url: endpoint,
+            form: formdata
+        }, function (err, httpResponse, body) {
+            if (err) {
+                resp.status(500)
+                resp.send(err)
+            } else {
+                try {
+                    body = JSON.parse(body)
+                    console.log(JSON.stringify(body))
+                    var fecha = ''
+                    if (body.respuesta.fecha) {
+                        fecha = body.respuesta.fecha
+                    } else {
+                        incrementProducto(referenciaProducto, unidades)
+                    }
+                    var mensaje = body.respuesta.mensaje
+                    var salida = body.respuesta.salida
+                    var obj = {
+                        mensaje: mensaje,
+                        fecha: fecha,
+                        referencia: referenciaProducto,
+                        unidades: unidades
+                    }
+                    if (!obj.fecha)
+                        obj.fecha = ''
+                    basededatos.pedidos.push(obj)
+                    resp.send(body)
+                } catch (error) {
+                    resp.status(500)
+                    resp.send(error)
+                }
+            }
+        })
+    } else {
+        resp.status(404)
+        resp.end()
+    }
+
 })
 
+function incrementProducto(ref, unidades) {
+    for (var prodkey in basededatos.productos) {
+        if (basededatos.productos[prodkey].referencia == ref) {
+            basededatos.productos[prodkey].unidades += unidades
+            break
+        }
+    }
+}
+
+function existsReference(ref) {
+    for (var prodkey in basededatos.productos) {
+        if (basededatos.productos[prodkey].referencia == ref) {
+            return true
+        }
+    }
+}
 // RUNING SERVER
 app.listen(30003, function () {
-    console.log('MTIS GRUPAL almacén rest, por Diego Maroto, sirviendo por el puerto 3000')
+    console.log('MTIS GRUPAL almacén rest, por Diego Maroto, sirviendo por el puerto 30003')
 })
